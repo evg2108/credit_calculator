@@ -30,15 +30,15 @@ class Calculations
   end
 
   def calculate_payed_credit_sum
-    @collection.inject(0){ |sum, calc_info| sum += calc_info.payed_credit_part }
+    @collection.inject(0){ |sum, calc_info| sum + calc_info.payed_credit_part }
   end
 
   def calculate_payed_percent_sum
-    @collection.inject(0){ |sum, calc_info| sum += calc_info.payed_percent }
+    @collection.inject(0){ |sum, calc_info| sum + calc_info.payed_percent }
   end
 
   def calculate_payed_full_sum
-    @collection.inject(0){ |sum, calc_info| sum += calc_info.payed_full }
+    @collection.inject(0){ |sum, calc_info| sum + calc_info.payed_full }
   end
 
   private
