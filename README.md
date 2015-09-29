@@ -3,5 +3,5 @@
 ## Start application
 
 ```
-    $ruby application.rb
+    $> ruby application.rb
 ```
