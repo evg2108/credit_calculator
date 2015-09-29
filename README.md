@@ -2,6 +2,6 @@
 
 ## Start application
 
-```
-    $> ruby application.rb
+```shell
+    ruby application.rb
 ```
