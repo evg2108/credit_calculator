@@ -1,0 +1,36 @@
+strong
+  ' Процентная ставка:
+= "#{currency_format @calculations.percent_rate}%"
+br
+strong
+  ' Сумма кредита:
+= currency_format @calculations.credit_sum
+
+table border='1'
+  thead
+    tr
+      th номер месяца
+      th погашение кредита
+      th погашение %
+      th общий взнос
+      th остаток кредита
+  tbody
+    - @calculations.each.with_index do |calc_info, index|
+      tr
+        td= index + 1
+        td= currency_format calc_info.payed_credit_part
+        td= currency_format calc_info.payed_percent
+        td= currency_format calc_info.payed_full
+        td= currency_format calc_info.balance.abs
+    tr
+      td
+      td= currency_format @calculations.calculate_payed_credit_sum
+      td= currency_format @calculations.calculate_payed_percent_sum
+      td= currency_format @calculations.calculate_payed_full_sum
+      td
+
+ol
+  li Стоимость нотариального оформления договора залога может отличаться от приведенной.
+  li Размер страхового взноса может колебаться в зависимости от комплекса предоставляемых страховой компанией услуг.
+  li Стоимость внесения в реестр движимого имущества может отличаться от приведенной.
+  li График соответствует случаю погашения кредита день в день. В случае отклонения от графика сумма начисленных процентов будет отличаться от приведенных в графике.
