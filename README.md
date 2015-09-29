@@ -3,5 +3,6 @@
 ## Start application
 
 ```shell
+    bundle install
     ruby application.rb
 ```
