@@ -48,6 +48,94 @@ RSpec.describe Calculations do
     end
   end
 
+  describe '#calculate_usual' do
+    let(:month) { (subject.credit_period / 2).to_i }
+
+    let(:payed_credit_part_result) { subject.credit_sum / subject.credit_period }
+    let(:payed_percent_result) { ((subject.credit_sum - payed_credit_part_result * (month - 1)) / 12) * subject.percent_rate / 100 }
+    let(:payed_full_result) { payed_credit_part_result + payed_percent_result }
+    let(:balance_result) { subject.credit_sum - payed_credit_part_result * month }
+
+    let(:calculate_usual_result) do
+      subject.send(:calculate_usual, subject.credit_period, month, subject.percent_rate, subject.credit_sum)
+    end
+
+    it 'returns CalculationInfo instance' do
+      expect(calculate_usual_result).to be_an CalculationInfo
+    end
+
+    it 'sets valid payed_credit_part for CalculationInfo instance' do
+      expect(calculate_usual_result.payed_credit_part).to eq(payed_credit_part_result)
+    end
+
+    it 'sets valid payed_percent for CalculationInfo instance' do
+      expect(calculate_usual_result.payed_percent).to eq(payed_percent_result)
+    end
+
+    it 'sets valid payed_full for CalculationInfo instance' do
+      expect(calculate_usual_result.payed_full).to eq(payed_full_result)
+    end
+
+    it 'sets valid balance for CalculationInfo instance' do
+      expect(calculate_usual_result.balance).to eq(balance_result)
+    end
+  end
+
+  describe '#calculate_equal' do
+    let(:rate) { subject.percent_rate / (12 * 100) }
+    let(:coefficient) { (rate * (rate + 1) ** subject.credit_period) / ((rate + 1) ** subject.credit_period - 1) }
+
+    let(:payed_full_result) { subject.credit_sum * coefficient }
+    let(:payed_percent_result) { proc { |prev_balance| (prev_balance || subject.credit_sum) * rate } }
+    let(:payed_credit_part_result) { proc { |prev_balance| payed_full_result - payed_percent_result.call(prev_balance) } }
+    let(:balance_result) { proc { |prev_balance| (prev_balance || subject.credit_sum) - payed_credit_part_result.call(prev_balance) } }
+
+    it 'returns CalculationInfo instance' do
+      prev_balance = nil
+      (1..subject.credit_period).to_a.each do
+        calculate_equal_result = subject.send(:calculate_equal, subject.credit_period, subject.percent_rate, subject.credit_sum, prev_balance)
+        expect(calculate_equal_result).to be_an CalculationInfo
+        prev_balance = calculate_equal_result.balance
+      end
+    end
+
+    it 'sets valid payed_credit_part for CalculationInfo instance' do
+      prev_balance = nil
+      (1..subject.credit_period).to_a.each do
+        calculate_equal_result = subject.send(:calculate_equal, subject.credit_period, subject.percent_rate, subject.credit_sum, prev_balance)
+        expect(calculate_equal_result.payed_credit_part).to eq(payed_credit_part_result.call(prev_balance))
+        prev_balance = calculate_equal_result.balance
+      end
+    end
+
+    it 'sets valid payed_percent for CalculationInfo instance' do
+      prev_balance = nil
+      (1..subject.credit_period).to_a.each do
+        calculate_equal_result = subject.send(:calculate_equal, subject.credit_period, subject.percent_rate, subject.credit_sum, prev_balance)
+        expect(calculate_equal_result.payed_percent).to eq(payed_percent_result.call(prev_balance))
+        prev_balance = calculate_equal_result.balance
+      end
+    end
+
+    it 'sets valid payed_full for CalculationInfo instance' do
+      prev_balance = nil
+      (1..subject.credit_period).to_a.each do
+        calculate_equal_result = subject.send(:calculate_equal, subject.credit_period, subject.percent_rate, subject.credit_sum, prev_balance)
+        expect(calculate_equal_result.payed_full).to eq(payed_full_result)
+        prev_balance = calculate_equal_result.balance
+      end
+    end
+
+    it 'sets valid balance for CalculationInfo instance' do
+      prev_balance = nil
+      (1..subject.credit_period).to_a.each do
+        calculate_equal_result = subject.send(:calculate_equal, subject.credit_period, subject.percent_rate, subject.credit_sum, prev_balance)
+        expect(calculate_equal_result.balance).to eq(balance_result.call(prev_balance))
+        prev_balance = calculate_equal_result.balance
+      end
+    end
+  end
+
   context do
     subject do
       Calculations.new('percent_rate'   => random_percent_rate,
